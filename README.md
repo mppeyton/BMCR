@@ -11,6 +11,11 @@
 
 ## Overview
 
+
+Jackson Laboratories 
+[https://www.jax.org/education-and-learning/education-calendar/2026/04-april/methods-for-multiomics-data-analysis-short-course]
+
+
 Single cell and single nuclei transcriptomic data from the Cellular Senescence Network (SenNet) Program was integrated to examine changes in liver aging. 
 
 
