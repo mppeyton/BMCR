@@ -1,7 +1,7 @@
 # BMCR
 BMCR (Basically Making Charts Readable) Group
 
-<img width="474" height="376" alt="Screenshot 2025-10-03 at 12 44 02 AM" src="https://commonfundmul-up17793.slack.com/files/U0AR16G34J2/F0B02GXNKL7/bmcr-hex-logo.png" />
+<img width="474" height="376" alt="bmcR-hex-logo" src="https://commonfundmul-up17793.slack.com/files/U0AR16G34J2/F0B02GXNKL7/bmcr-hex-logo.png" />
 
 ## ✨ TL;DR
 
