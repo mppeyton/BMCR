@@ -1,8 +1,7 @@
 # BMCR
 BMCR (Basically Making Charts Readable) Group
 
-<img width="474" height="376" alt="bmcR-hex-logo" src="https://github.com/user-attachments/assets/5377234b-29bd-4956-816b-541851c07338" />
-
+<img width="494" height="517" alt="bmcR-hex-logo" src="https://github.com/user-attachments/assets/5377234b-29bd-4956-816b-541851c07338" />
 
 ## ✨ TL;DR
 
