@@ -1,4 +1,5 @@
 # BMCR (Basically Making Charts Readable) Group
+Team Members: Riley Sheldon, Christopher Litwin, Brandan Le, and Mina Peyton
 
 <img width="494" height="517" alt="bmcR-hex-logo" src="https://github.com/user-attachments/assets/5377234b-29bd-4956-816b-541851c07338" />
 
