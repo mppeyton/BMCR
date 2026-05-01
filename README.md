@@ -27,7 +27,7 @@ Single cell and single nuclei RNAseq of human liver from the Cellular Senescence
 ## Methods
 
 ### Data Collection / Processing
-10x Genomics - Epi Multiome: multiomic same-cell open chromatin and gene expression profiling
+10x Genomics - Chromium NextGem Single Cell Multiome ATAC + Gene Expression 
 
 ### Pre-processing
 
