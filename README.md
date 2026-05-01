@@ -12,7 +12,7 @@ Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26)
   1. How does aging remodel the transcriptional landscape, cellular composition, and intercellular communication network of the human liver at single-cell resolution?
   2. Are these changes conserved across biological sex?
         
-- **Hypothesis**: Aging will drive a shift in liver cellular composition characterized by: (1) expansion of senescent and pro-inflammatory stromal populations (hepatic stellate cells, Kupffer cells), (2) transcriptional attenuation of hepatocyte metabolic and regenerative programs, and (3) upregulation of senescence-associated secretory phenotype (SASP) gene programs
+- **Hypothesis**: Aging will alter liver cellular composition by: (1) increase senescent and pro-inflammatory markers (cytokines, MMPs, hepatic stellate cells, Kupffer cells), and (2) downregulation of hepatic metabolic and regenerative gene expression.
   
 - **Goal:** Integration of scRNAseq and snRNAseq data of liver samples from young and old human.
 - **Data**: Cellular Senescence Network (SenNet) Program
