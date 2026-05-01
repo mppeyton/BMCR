@@ -10,7 +10,7 @@ Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26)
 
 - **Question**: 
 - **Hypothesis**: 
-- **Goal:** Integration of single cell and single nuclei transcriptomic data of liver.
+- **Goal:** Integration of single cell and single nuclei transcriptomic and epigenetics data of liver.
 - **Data**: Cellular Senescence Network (SenNet) Program
 
 ## Overview
@@ -21,13 +21,16 @@ Single cell and single nuclei transcriptomic data of human liver from the Cellul
 
 
 ## Methods
+
+### Data Collection / Processing
+10x Genomics - Epi Multiome: multiomic same-cell open chromatin and gene expression profiling
+
 ### Pre-processing
 
 Datasets were downloaded from the SenNet Data Portal.
 
 Seurat Multimodal Reference Mapping
 https://satijalab.org/seurat/articles/multimodal_reference_mapping
-
 
 
 ### References
