@@ -5,28 +5,28 @@
 
 ## ✨ TL;DR
 
+Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26) Project
+[https://www.jax.org/education-and-learning/education-calendar/2026/04-april/methods-for-multiomics-data-analysis-short-course]
+
 - **Question**: 
 - **Hypothesis**: 
-- **Goal:** Integration of single cell and single nuclei transcriptomic data in liver.
+- **Goal:** Integration of single cell and single nuclei transcriptomic data of liver.
 - **Data**: Cellular Senescence Network (SenNet) Program
 
 ## Overview
 
-
-Jackson Laboratories 
-[https://www.jax.org/education-and-learning/education-calendar/2026/04-april/methods-for-multiomics-data-analysis-short-course]
-
-
-Single cell and single nuclei transcriptomic data from the Cellular Senescence Network (SenNet) Program was integrated to examine changes in liver aging. 
+Single cell and single nuclei transcriptomic data of human liver from the Cellular Senescence Network (SenNet) Program was integrated to examine changes in liver aging. 
 
 
 
 
 ## Methods
-
 ### Pre-processing
 
-Seurat 
+Datasets were downloaded from the SenNet Data Portal.
+
+Seurat Multimodal Reference Mapping
+https://satijalab.org/seurat/articles/multimodal_reference_mapping
 
 
 
