@@ -1,0 +1,424 @@
+---
+title: "sennet_liver"
+author: "Team BMCR"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+editor: visual
+execute: 
+  eval: false
+  echo: true
+---
+
+## Load libraries
+
+```{r load-libaries}
+library(Seurat)
+BiocManager::install("sparseMatrixStats")
+install.packages('Signac')
+library(Signac)
+# library(EnsDb.Hsapiens.v86)
+library(dplyr)
+BiocManager::install('glmGamPoi')
+library(glmGamPoi)
+library(patchwork)
+BiocManager::install('scCustomize')
+library(scCustomize) # custom scRNA-seq plots
+library(ggplot2)
+install.packages("glue")
+library(glue)
+
+```
+
+## Load data
+
+```{r}
+# obtain RDS files and read into a list
+file_list <- list.files("data", recursive = TRUE, pattern = "*.rds", full.names = TRUE)[2:5]
+sample_name <- list.dirs("data/", full.names = FALSE)[2:5]
+seu_list <- lapply(file_list, readRDS)
+
+# assign names for each object in the list
+names(seu_list) <- sample_name
+
+# seu_list[1]
+```
+
+## Merge data from all samples
+
+This is a time consuming step and there were many steps requiring troubleshooting.
+
+### Correct indexing of ATAC fragments
+
+```{r atac-index}
+# Index fragment file
+library(Rsamtools)
+
+# Get list of files
+atac_fragments_file <- list.files("data", recursive = TRUE, pattern = "*.tsv.gz$", full.names = TRUE)
+
+# Index the fragment files
+# fragment files should be in bgzip format for indexing
+
+for (i in 1:length(atac_fragments_file)) {
+  indexTabix(atac_fragments_file[[i]], format = "bed")
+}
+
+# Correct the path to the fragment file
+for (i in 1:length(seu_list)) {
+  # Remove the old link causing the "Cells already present" error
+  Fragments(seu_list[[i]]) <- NULL
+  
+  # Create and add the new link
+  Fragments(seu_list[[i]]) <- CreateFragmentObject(
+    path = atac_fragments_file[i],
+    cells = colnames(seu_list[[i]]),
+    validate = TRUE
+  )
+}
+
+```
+
+### Correct Indexing of ATAC Fragments
+
+Sample 2 had a distinct issue from the other samples where there were discordant number of cells in the Seurat object and fragment files. The steps below filters for common cells between the two and subset the data for indexing.
+
+```{r}
+i=2
+
+# Get all unique cells present in the fragment file
+# (Warning: this can be slow for very large files)
+library(Signac)
+
+
+message("Processing sample: ", names(seu_list)[i])
+  
+  # 1. Fast extract unique barcodes from the fragment file using terminal tools
+  # This uses 'zcat', 'cut' to get the 4th column, and 'uniq' to get the list
+  cmd <- paste0("zcat < ", atac_fragments_file[i], " | cut -f4 | sort | uniq")
+  cells_in_fragment_file <- system(cmd, intern = TRUE)
+  
+  # 2. Identify the overlap
+  # IMPORTANT: Check if you need to add/remove prefixes here!
+  # If Seurat has "Sample1_", use: intersect(gsub(".*_", "", colnames(seu_list[[i]])), cells_in_fragment_file)
+  current_seurat_cells <- colnames(seu_list[[i]])
+  common_cells <- intersect(current_seurat_cells, cells_in_fragment_file)
+  
+  message("Found ", length(common_cells), " overlapping cells out of ", length(current_seurat_cells))
+  
+  # 3. Subset the Seurat object to only these common cells
+  seu_list[[i]] <- subset(seu_list[[i]], cells = common_cells)
+  
+  # 4. Clear old fragment data and add the new link
+  Fragments(seu_list[[i]]) <- NULL
+  Fragments(seu_list[[i]]) <- CreateFragmentObject(
+    path = atac_fragments_file[i],
+    cells = colnames(seu_list[[i]]), # Now they match perfectly
+    validate = FALSE                 # Fast, since we just verified them manually
+  )
+
+```
+
+### Standardize ATAC peaks
+
+```{r standardize-peaks}
+library(GenomicRanges)
+
+# 1. Get peaks from all objects
+peaks_list <- lapply(seu_list, function(x) granges(x[["ATAC_MACS2"]]))
+
+# 2. Combine and "reduce" (merge overlapping peaks into one)
+combined_peaks <- reduce(unlist(as(peaks_list, "GRangesList")))
+
+# 3. Quantify this new peak set in each sample
+for (i in 1:length(seu_list)) {
+  # Count fragments in the new unified peaks
+  counts <- FeatureMatrix(
+    fragments = Fragments(seu_list[[i]]),
+    features = combined_peaks,
+    cells = colnames(seu_list[[i]])
+  )
+  
+  # Create a new Assay with the unified peaks
+  seu_list[[i]][["ATAC"]] <- CreateChromatinAssay(
+    counts = counts,
+    fragments = Fragments(seu_list[[i]])
+  )
+}
+
+```
+
+### Merge objects
+
+```{r merge-data}
+# Final merge of seurat objects
+liver <- merge(x = seu_list[[1]],
+               y = seu_list[2:4],
+               add.cell.ids = names(seu_list),
+               merge.data = FALSE
+               )
+
+saveRDS(liver, "data/liver_seu_merged.rds")
+# liver <- readRDS("data/liver_seu_merged.rds") # can run this to skip the other previous sections
+```
+
+## Some QC plots
+
+These are nuclei data so the lack of mitochondria in the samples is expected.
+
+```{r QC-plots}
+liver[["percent.mt"]] <- PercentageFeatureSet(liver, pattern = "^MT-")
+
+VlnPlot(liver, features = c("nCount_ATAC", "nCount_RNA", "percent.mt"), ncol = 3,
+  log = TRUE, pt.size = 0) + NoLegend()
+ggsave("fig/liver_QC.png", width = 8, height = 5)
+```
+
+![QC](fig/liver_QC.png)
+
+## Filtering data from the QC
+
+```{r data-filter}
+liver_filtered <- subset(
+  x = liver,
+  subset = nCount_ATAC < 7e4 &
+    nCount_ATAC > 1e3 &
+    nCount_RNA < 50000 &
+    nCount_RNA > 1000 &
+    percent.mt < 10
+)
+```
+
+### Adding metadata to the merged Seurat object
+
+```{r meta-data}
+meta <- liver_filtered@meta.data
+
+meta <- meta |> 
+  mutate(
+    sennet_id = case_when(
+      grepl("SN049H1", orig.ident) ~ "SNT323.JXVC.442",
+      grepl("SN078H1", orig.ident) ~ "SNT575.PMHQ.397",
+      grepl("SN087H1", orig.ident) ~ "SNT626.DNSL.944",
+      grepl("SN091H1", orig.ident) ~ "SNT875.QRMN.232",
+      TRUE ~ NA
+      ),
+    age = case_when(
+      grepl("SN049H1", orig.ident) ~ 73,
+      grepl("SN078H1", orig.ident) ~ 27,
+      grepl("SN087H1", orig.ident) ~ 27,
+      grepl("SN091H1", orig.ident) ~ 73,
+      TRUE ~ NA
+    ),
+    sex = case_when(
+      grepl("SN049H1", orig.ident) ~ "M",
+      grepl("SN078H1", orig.ident) ~ "M",
+      grepl("SN087H1", orig.ident) ~ "F",
+      grepl("SN091H1", orig.ident) ~ "F",
+      TRUE ~ NA
+    ),
+    age_group = case_when(
+      age < 50 ~ "young",
+      age > 50 ~ "old",
+      TRUE ~ NA
+    ),
+    age_sex = glue::glue("{age}_{sex}")
+  )
+
+liver_filtered@meta.data <- meta
+# liver_filtered$age_sex <- paste0(liver_filtered$age,"_",liver_filtered$sex)
+```
+
+### Process Joined Object (Seurat workflow)
+
+```{r join-obj}
+# RNA assay
+DefaultAssay(liver_filtered) <- "RNA"
+liver_filtered <- NormalizeData(liver_filtered)
+liver_filtered <- FindVariableFeatures(liver_filtered, selection.method = "vst", nfeatures = 2000)
+liver_filtered <- ScaleData(liver_filtered)
+liver_filtered <- RunPCA(liver_filtered)
+
+ElbowPlot(liver_filtered, ndims = 50)
+N_PCS <- 30 # from elbow plot
+
+liver_filtered <- RunUMAP(liver_filtered, 
+                          dims = 1:N_PCS, 
+                          reduction.name = 'umap.rna', 
+                          reduction.key = 'rnaUMAP_')
+
+# ATAC assay
+DefaultAssay(liver_filtered) <- "ATAC"
+liver_filtered <- RunTFIDF(liver_filtered)
+liver_filtered <- FindTopFeatures(liver_filtered, min.cutoff = 'q0')
+liver_filtered <- RunSVD(liver_filtered)
+liver_filtered <- RunUMAP(liver_filtered, reduction = 'lsi', dims = 2:50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
+
+# WNN
+liver_filtered <- FindMultiModalNeighbors(liver_filtered, reduction.list = list("pca", "lsi"), dims.list = list(1:50, 2:50))
+liver_filtered <- RunUMAP(liver_filtered, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+liver_filtered <- FindClusters(liver_filtered, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
+```
+
+### Cluster Annotation
+
+```{r}
+devtools::install_github("satijalab/AzimuthAPI")
+library(AzimuthAPI)
+# library(SingleR)
+# library(celldex)
+# ref <- celldex::HumanPrimaryCellAtlasData()
+liver_filtered <- CloudAzimuth(liver_filtered)
+# saveRDS(liver_filtered, "data/liver_filtered_merged_annotated.rds")
+```
+
+### Visualization
+
+```{r}
+# UMAP of all cells and annotations
+# DimPlot(liver_filtered, reduction = "umap.rna", label = TRUE) + NoLegend()
+
+# UMAP grouped by sennet_id or patient
+# DimPlot(liver_filtered, reduction = "umap.rna", group.by = "sennet_id")
+DimPlot_scCustom(liver_filtered, 
+                 reduction = "umap.rna", 
+                 group.by = "sennet_id", 
+                 ggplot_default_colors = TRUE)
+ggsave("fig/UMAP_groupby_patient.png")
+
+# UMAP grouped by age_sex
+# DimPlot(liver_filtered, reduction = "umap.rna", group.by = "age_sex")
+# DimPlot(liver_filtered, reduction = "umap.rna", label = TRUE, label.size = 4, split.by = "age_sex") + NoLegend()
+# 
+DimPlot_scCustom(liver_filtered, reduction = "umap.rna", label = TRUE, label.size = 4, split_seurat = TRUE, split.by = "age_sex", repel = TRUE, ggplot_default_colors = TRUE) + NoLegend()
+ggsave("fig/UMAP_split_by_patient.png", width = 11, height = 7)
+
+# number of cells per patient
+table(liver_filtered$sennet_id) # 27_M patient had very few cells post-filtering
+```
+
+![UMAP Grouped by Patient](fig/UMAP_groupby_patient.png)
+
+![UMAP Split by Patient](fig/UMAP_split_by_patient.png)
+
+### Plotting All Modal combined
+
+```{r}
+p1 <- DimPlot(liver_filtered, reduction = "umap.rna") + ggtitle("RNA")
+p2 <- DimPlot(liver_filtered, reduction = "umap.atac") + ggtitle("ATAC")
+p3 <- DimPlot(liver_filtered, reduction = "wnn.umap") + ggtitle("WNN")
+p1 + p2 + p3 & NoLegend() & theme(plot.title = element_text(hjust = 0.5))
+ggsave("fig/UMAP_RNA_ATAC_WNN.png", width = 11, height = 5)
+
+```
+
+![UMAP All Modal](fig/UMAP_RNA_ATAC_WNN.png)
+
+## Hepatocyte Sub-clustering
+
+### Subset based on Hepatocyte cell type
+
+```{r}
+ident_names <- levels(liver_filtered)
+hepatocyte <- subset(x = liver_filtered, idents = "Hepatocyte")
+
+# RNA assay
+DefaultAssay(hepatocyte) <- "RNA"
+hepatocyte <- NormalizeData(hepatocyte)
+hepatocyte <- FindVariableFeatures(hepatocyte, selection.method = "vst", nfeatures = 2000)
+hepatocyte <- ScaleData(hepatocyte)
+hepatocyte <- RunPCA(hepatocyte)
+
+ElbowPlot(hepatocyte, ndims = 50)
+N_PCS <- 30
+
+hepatocyte <- RunUMAP(hepatocyte, 
+                          dims = 1:N_PCS, 
+                          reduction.name = 'umap.rna', 
+                          reduction.key = 'rnaUMAP_')
+
+# ATAC assay
+DefaultAssay(hepatocyte) <- "ATAC"
+hepatocyte <- RunTFIDF(hepatocyte)
+hepatocyte <- FindTopFeatures(hepatocyte, min.cutoff = 'q0')
+hepatocyte <- RunSVD(hepatocyte)
+hepatocyte <- RunUMAP(hepatocyte, reduction = 'lsi', dims = 2:50, reduction.name = "umap.atac", reduction.key = "atacUMAP_")
+
+# WNN
+hepatocyte <- FindMultiModalNeighbors(hepatocyte, reduction.list = list("pca", "lsi"), dims.list = list(1:50, 2:50))
+hepatocyte <- RunUMAP(hepatocyte, nn.name = "weighted.nn", reduction.name = "wnn.umap", reduction.key = "wnnUMAP_")
+hepatocyte <- FindClusters(hepatocyte, graph.name = "wsnn", algorithm = 3, verbose = FALSE)
+```
+
+### Plotting Hepatocyte Subcluster
+
+```{r}
+# annotation
+hepatocyte <- CloudAzimuth(hepatocyte)
+
+# UMAP RNA by age_sex
+DefaultAssay(hepatocyte) <- "RNA"
+DimPlot(hepatocyte, reduction = 'umap.rna', group.by = "age_sex")
+ggsave("fig/UMAP_hepatocyte_RNA_by_patient.png")
+
+DefaultAssay(hepatocyte) <- "ATAC"
+DimPlot(hepatocyte, reduction = 'umap.atac', group.by = 'age_sex')
+ggsave("fig/UMAP_hepatocyte_ATAC.png")
+
+saveRDS(hepatocyte, "data/hepatocyte_subcluster.rds")
+```
+
+![UMAP Hepatocyte (RNA)](fig/UMAP_hepatocyte_RNA_by_patient.png)
+
+![UMAP hepatocyte (ATAC)](fig/UMAP_hepatocyte_ATAC.png)
+
+### Module score
+
+Score for zones along the liver (pericentral and periportal)
+
+```{r}
+Pericentral = c("CYP3A4", "CYP3A5", "CYP3A7", "CYP2E1", "GLUL")
+Periportal = c("HAMP", "ASS1", "ALB", "CPS1")
+
+DefaultAssay(hepatocyte) <- "RNA"
+
+hepatocyte <- AddModuleScore(
+  object = hepatocyte,
+  features = Pericentral,
+  name = "Pericentral"
+)
+
+hepatocyte <- AddModuleScore(
+  object = hepatocyte,
+  features = Periportal,
+  name = "Periportal"
+)
+
+hepatocyte$zone_score <- hepatocyte$Pericentral1 - hepatocyte$Periportal1
+
+# FeaturePlot(hepatocyte, features = "Periportal1", reduction = 'umap.rna')
+# FeaturePlot(hepatocyte, features = "Periportal1", reduction = 'umap.rna')
+
+RidgePlot(hepatocyte, features = "zone_score", group.by = "age_sex")
+ggsave("fig/UMAP_hepatocyte_zone_score_ridgeplot.png")
+
+VlnPlot(hepatocyte, features = "zone_score", group.by = "age_sex")
+ggsave("fig/UMAP_hepatocyte_zone_score_boxplot.png")
+
+
+# joint density plot
+BiocManager::install("Nebulosa")
+library(Nebulosa)
+
+Plot_Density_Joint_Only(hepatocyte, features = c("Pericentral1", "Periportal1"), ) + 
+  ggtitle("Single Cell Zonation with Age")
+ggsave("fig/UMAP_zonation_density_plot.png")
+
+```
+
+![RidgePlot Zone Score](fig/UMAP_hepatocyte_zone_score_ridgeplot.png)
+
+![Volcano Plot Zone Score](fig/UMAP_hepatocyte_zone_score_boxplot.png)
+
+![Joint Density Plot (Zone Score)](fig/UMAP_zonation_density_plot.png)
