@@ -14,7 +14,7 @@ Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26)
         
 - **Hypothesis**: Aging will alter liver cellular composition by: (1) increase senescent and pro-inflammatory markers (cytokines, MMPs, hepatic stellate cells, Kupffer cells), and (2) downregulation of hepatic metabolic and regenerative gene expression.
   
-- **Goal:** Integration of scRNAseq and snRNAseq data of liver samples from young and old human.
+- **Goal:** Integration of scRNA-seq and snRNA-seq data of liver samples from young and old human.
 - **Data**: Cellular Senescence Network (SenNet) Program
 
 ## Overview
