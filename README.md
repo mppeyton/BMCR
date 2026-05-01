@@ -15,7 +15,7 @@ Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26)
 
 ## Overview
 
-Single cell and single nuclei transcriptomic data of human liver from the Cellular Senescence Network (SenNet) Program was integrated to examine changes in liver aging. 
+Single cell and single nuclei RNAseq of human liver from the Cellular Senescence Network (SenNet) Program was integrated to examine changes in liver aging. 
 
 
 
