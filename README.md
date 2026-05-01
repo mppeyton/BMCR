@@ -1,11 +1,9 @@
 # BMCR (Basically Making Charts Readable) Group Project
-## Team Members: Riley Sheldon, Christopher Litwin, Brandan Le, & Mina Peyton
-
-<img width="494" height="517" alt="bmcR-hex-logo" src="https://github.com/user-attachments/assets/5377234b-29bd-4956-816b-541851c07338" />
-
+## Team Members: Riley Sheldon, Christopher Litwin, Brandan Le, & Mina Peyton  
 ## ✨ Multiomics Project
 ## Integration of Single Cell and Single Nuclei RNA-seq in Aged Human Livers
 
+<img width="494" height="517" alt="bmcR-hex-logo" src="https://github.com/user-attachments/assets/5377234b-29bd-4956-816b-541851c07338" />
 
 Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26) 
 [https://www.jax.org/education-and-learning/education-calendar/2026/04-april/methods-for-multiomics-data-analysis-short-course]
