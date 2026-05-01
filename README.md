@@ -8,9 +8,13 @@
 Jackson Laboratories: Methods for Multiomics Data Analysis (04/26/26 - 05/01/26) 
 [https://www.jax.org/education-and-learning/education-calendar/2026/04-april/methods-for-multiomics-data-analysis-short-course]
 
-- **Question**: 
-- **Hypothesis**: 
-- **Goal:** Integration of single cell and single nuclei transcriptomic and epigenetics data of liver.
+- **Questions**:
+  1. How does aging remodel the transcriptional landscape, cellular composition, and intercellular communication network of the human liver at single-cell resolution?
+  2. Are these changes conserved across biological sex?
+        
+- **Hypothesis**: Aging will drive a shift in liver cellular composition characterized by: (1) expansion of senescent and pro-inflammatory stromal populations (hepatic stellate cells, Kupffer cells), (2) transcriptional attenuation of hepatocyte metabolic and regenerative programs, and (3) upregulation of senescence-associated secretory phenotype (SASP) gene programs
+  
+- **Goal:** Integration of scRNAseq and snRNAseq data of liver samples from young and old human.
 - **Data**: Cellular Senescence Network (SenNet) Program
 
 ## Overview
