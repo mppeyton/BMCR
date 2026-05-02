@@ -92,8 +92,6 @@ Datasets were obtained from the SenNet Data Portal.
 - **tidyverse**  
 - **Bioconductor ecosystem**  
 
-## Reproducibility
-
-- Version-controlled via GitHub  
+## Reproducibility  
 - Scripted workflows (R / Quarto)  
 - Seeded analyses where applicable  
