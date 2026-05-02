@@ -88,13 +88,12 @@ Datasets were obtained from the SenNet Data Portal.
 
 - **R (>= 4.4)**  
 - **Seurat (v5+)**  
-- **Signac** (for ATAC, if used)  
+- **Signac** (for ATAC)  
 - **tidyverse**  
 - **Bioconductor ecosystem**  
 
 ## Reproducibility
 
 - Version-controlled via GitHub  
-- Scripted workflows (R / Quarto / RMarkdown)  
-- Modular pipeline design  
+- Scripted workflows (R / Quarto)  
 - Seeded analyses where applicable  
