@@ -14,19 +14,14 @@ Jackson Laboratory — *Methods for Multiomics Data Analysis*
 
 This project investigates age-associated changes in human liver biology through the integration of single-cell RNA sequencing (scRNA-seq) and single-nucleus RNA sequencing (snRNA-seq) datasets. Leveraging data from the **Cellular Senescence Network (SenNet)** program, we focus on hepatocyte zonation and its disruption with aging.
 
-
 ## Research Questions
 
 1. **Does the single-cell transcriptional landscape of hepatocyte zonation change with age?**  
 2. **Are these changes conserved across biological sex?**
 
----
-
 ## Hypothesis
 
-Aging perturbs the spatial and transcriptional organization of hepatocyte zonation observed in young human livers.
-
----
+Aging perturbs the transcriptional organization of hepatocyte zonation observed in young human livers.
 
 ## Objectives
 
@@ -34,8 +29,6 @@ Aging perturbs the spatial and transcriptional organization of hepatocyte zonati
 - Characterize zonation-specific transcriptional signatures  
 - Assess sex-specific conservation of aging effects  
 - Generate reproducible multi-omics analysis workflows  
-
----
 
 ## Data Sources
 
@@ -45,9 +38,6 @@ Aging perturbs the spatial and transcriptional organization of hepatocyte zonati
 - **Data Types:**
   - Single-cell RNA-seq (scRNA-seq)  
   - Single-nucleus RNA-seq (snRNA-seq)  
-  - (Optional extension) ATAC-seq for chromatin accessibility  
-
----
 
 ## Methods
 
@@ -77,16 +67,12 @@ Datasets were obtained from the SenNet Data Portal.
 - Zonation trajectory inference  
 - Sex-stratified comparative analysis  
 
----
-
 ## Expected Outputs
 
 - Integrated liver cell atlas across age groups  
 - Zonation-specific gene expression profiles  
 - Differential aging signatures  
 - Reproducible R-based analysis pipelines  
-
----
 
 ## References
 
@@ -96,9 +82,7 @@ Datasets were obtained from the SenNet Data Portal.
 - Karpova A, Li X, Peng C-W, et al.  
   *Cellular senescence in human liver under normal aging and cancer.*  
   Cell Genomics. 2026;6:101133.  
-  🔗 https://www.sciencedirect.com/science/article/pii/S2666979X25003891  
-
----
+  https://www.sciencedirect.com/science/article/pii/S2666979X25003891  
 
 ## Tech Stack
 
@@ -107,8 +91,6 @@ Datasets were obtained from the SenNet Data Portal.
 - **Signac** (for ATAC, if used)  
 - **tidyverse**  
 - **Bioconductor ecosystem**  
-
----
 
 ## Reproducibility
 
