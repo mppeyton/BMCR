@@ -47,13 +47,13 @@ Datasets were obtained from the SenNet Data Portal.
 ### Experimental Platform
 - **10x Genomics Chromium Next GEM Multiome**  
   - Gene Expression  
-  - ATAC-seq (if applicable)
+  - ATAC-seq 
 
 ### Pre-processing & Integration
 
 - Quality control, normalization, and feature selection  
 - Integration using **Seurat Multimodal Reference Mapping**  
-  🔗 https://satijalab.org/seurat/articles/multimodal_reference_mapping  
+  https://satijalab.org/seurat/articles/multimodal_reference_mapping  
 
 - Batch correction and cross-modality alignment  
 - Cell-type annotation and zonation inference  
